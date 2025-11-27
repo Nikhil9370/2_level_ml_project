@@ -15,7 +15,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.10
+          python-version: "3.10"
 
       - name: Install Dependencies
         run: |
@@ -28,21 +28,28 @@ jobs:
       - name: Run Tests
         run: pytest tests
 
+
   deploy:
     runs-on: ubuntu-latest
     needs: build-and-test
     if: success()
-    
+
+    permissions:
+      pages: write        # ⬅️ GitHub Pages को deploy करने की permission
+      id-token: write
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Deploy to GitHub Pages
+      - name: Create HTML File
         run: |
           echo "<h1>Age Prediction Model</h1><p>Status: All tests passed ✅</p>" > index.html
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add index.html
-          git commit -m "Deploy HTML page"
-          git branch -M gh-pages
-          git push -f origin gh-pages
+
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
